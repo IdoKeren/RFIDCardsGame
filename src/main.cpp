@@ -14,15 +14,6 @@
 #define NR_OF_READERS 2
 
 //Led Matrix images
-int Apple[8] = {0b00011000,
-                0b00001000,
-                0b01110110,
-                0b11111111,
-                0b11111111,
-                0b11111111,
-                0b01111010,
-                0b00110100};
-
 byte digit1[] =   {
   B00000000,
   B00000000,
@@ -125,8 +116,6 @@ byte digit10[] =  {
   B01111110,
   B00000000
 };
-
-
 byte heart[] =    {       
   B00011100,
   B00111110,
@@ -137,7 +126,6 @@ byte heart[] =    {
   B00111110,
   B00011100
 };
-
 byte smile[] =   {
   B00000000,
   B00110110,
@@ -148,7 +136,6 @@ byte smile[] =   {
   B00110110,
   B00000000
 };
-
 byte sad[] =   {
   B00000000,
   B01100110,
@@ -162,6 +149,7 @@ byte sad[] =   {
 //Variables
 float turnLength = 17; //In Seconds
 float timerDigitStart = 4500;
+float endAudioDuration = 15; //In Seconds
 
 //Setup
 SoftwareSerial MP3(MP3_RX, MP3_TX);
@@ -172,17 +160,13 @@ int CLK = 3;
 LedControl lc = LedControl(DIN, CLK, CS,0);
 
 int readerNum;
-int currentDigit = 0;
 
 byte ssPins[] = {SS_1_PIN, SS_2_PIN};
 
 String cards[] = {"1c 34 e5 0c", "a2 87 68 a6", "e2 50 c0 a3", "62 5c 14 eb", "3c 98 51 0c", "8c 3a 7c 0c", "53 9d f4 33", "8c ad 40 0c", "cc 68 66 0c", "bc b9 6a 0c", "42 ef b0 e3", "a2 08 c0 a3", "7c 64 67 24", "bc c1 68 0c", "0c 14 42 0c", "2c c6 51 0c", "4c 1f 42 0c", "5c 8e 37 0c", "5c 21 51 0c", "0c 3e 42 0c", "e3 a8 ed 42", "bc 21 6e 0c", "c9 47 24 34", "cc 73 98 24", "5c ad 88 24", "ac 62 7e 24", "fd 82 72 3e", "49 b5 d7 34", "82 ca 99 e4", "fc 65 0f 0d", "3c 2d 69 0c", "ec 32 52 0c", "fc d2 7e 0c"};
 
 MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance.
-
-//Randomize numbers order
-//Add led matrix
-//Add end sequence
+int numbersLeft[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
 
 
 //Music functions
@@ -300,22 +284,43 @@ void printByte(byte character [])
   digitalWrite(CS, HIGH);
 }
 
+void randomizeArray (){
+  for (int i = 0; i < 33; i++){
+    numbersLeft[i] = i + 1;
+  }
+
+  randomSeed(micros());
+  
+  for (int i= 0; i< 33; i++) 
+  {
+    int pos = random(33);
+    int t = numbersLeft[i];   
+    numbersLeft[i] = numbersLeft[pos];
+    numbersLeft[pos] = t;
+  }
+
+  for (int i= 0; i< 33; i++)
+  {
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(numbersLeft[i]);
+  }
+}
+
 void game()
 {
-  //Turn on power led
+  digitalWrite(A1, HIGH);
   PlaySound(1);
   printByte(heart);
-  currentDigit = 0;
   delay(3000);
   /////////////Game Start////////////////
 
+  randomizeArray();
   int soundsLeft = 33;
-  int numbersLeft[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33};
   
   while (soundsLeft > 0)
   {
     printByte(heart);
-    currentDigit = 0;
     PlaySound(numbersLeft[0] + 4);
     bool wonRound = false;
     float timerStart = millis();
@@ -325,35 +330,24 @@ void game()
       // Serial.println(timePassed);
       //Show time on matrix
       if (timePassed > timerDigitStart && timePassed < timerDigitStart + 1000){
-        if (currentDigit != 1)
         printByte(digit1);
       } else if (timePassed > timerDigitStart + 1000 && timePassed < timerDigitStart + 2000){
-        if (currentDigit != 2){
           printByte(digit2);
-        }
       } else if (timePassed > timerDigitStart + 2000 && timePassed < timerDigitStart + 3000){
-        if (currentDigit != 3)
         printByte(digit3);
       } else if (timePassed > timerDigitStart + 3000 && timePassed < timerDigitStart + 4000){
-        if (currentDigit != 4)
         printByte(digit4);
       } else if (timePassed > timerDigitStart + 4000 && timePassed < timerDigitStart + 5000){
-        if (currentDigit != 5)
         printByte(digit5);
       } else if (timePassed > timerDigitStart + 5000 && timePassed < timerDigitStart + 6000){
-        if (currentDigit != 6)
         printByte(digit6);
       } else if (timePassed > timerDigitStart + 6000 && timePassed < timerDigitStart + 7000){
-        if (currentDigit != 7)
         printByte(digit7);
       } else if (timePassed > timerDigitStart + 7000 && timePassed < timerDigitStart + 8000){
-        if (currentDigit != 8)
         printByte(digit8);
       } else if (timePassed > timerDigitStart + 8000 && timePassed < timerDigitStart + 9000){
-        if (currentDigit != 9)
         printByte(digit9);
       } else if (timePassed > timerDigitStart + 9000 && timePassed < timerDigitStart + 10000){
-        if (currentDigit != 10)
         printByte(digit10);
       } 
 
@@ -398,8 +392,11 @@ void game()
   }
   }
   //Finished game stuff
+  printByte(heart);
+  PlaySound(4);
+  delay(endAudioDuration * 1000);
+  digitalWrite(A1, LOW);
 }
-
 
 void setup()
 {
@@ -407,9 +404,13 @@ void setup()
   InitializeSpeaker();
   rfidInit();
   matrixInit();
-  game();
+  pinMode(A0, INPUT_PULLUP);
+  pinMode(A1, OUTPUT);
 }
 
-void loop(){
-
+void loop()
+{
+  if (digitalRead(A0) == LOW){
+    game();
+  }
 }
